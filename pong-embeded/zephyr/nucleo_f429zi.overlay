@@ -1,0 +1,49 @@
+
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Copyright (c) 2020 Libre Solar Technologies GmbH
+ */
+ 
+
+&timers2 {
+	status = "okay";
+
+	pwm_1: pwm {
+		status = "okay";
+		pinctrl-0 = <&tim2_ch3_pb10>;
+	};
+};
+
+&adc1 {
+	status = "okay";
+};
+
+/ {
+
+	gpio_keys {
+		compatible = "gpio-keys";
+
+		dir_motor: dir_motor_pin {
+			label = "DIR_MTR_PIN";
+			gpios = <&gpiob 11 GPIO_ACTIVE_LOW>;
+		};
+	};
+
+	pwmleds {
+		compatible = "pwm-leds";
+		external_pwm_led: external_pwm_led {
+			pwms = <&pwm_1 3 4 PWM_POLARITY_NORMAL>;
+		};
+	};
+
+	zephyr,user {
+		io-channels = <&adc1 0>;
+	};
+	
+    aliases {
+        dir-motor = &dir_motor;
+		stp-motor = &external_pwm_led;
+    };
+
+};

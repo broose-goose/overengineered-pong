@@ -1,0 +1,21 @@
+
+syntax = "proto3";
+
+import "common.proto";
+
+package PongBackend.v1.client;
+
+option go_package = "github.com/polis-interactive/Pong/pong-backend/api/v1/go/client;grpcClient";
+
+message ClientResponse {
+  oneof response {
+    common.Ping ping = 1;
+    common.Connected connected = 2;
+    common.Position position = 3;
+  }
+}
+
+service Client {
+  rpc ClientStream(common.EmptyRequest) returns (stream ClientResponse) {}
+  rpc ClientPong(common.Pong) returns (common.EmptyResponse) {}
+}

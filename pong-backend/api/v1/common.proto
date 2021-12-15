@@ -1,0 +1,22 @@
+
+syntax = "proto3";
+
+package PongBackend.v1.common;
+
+option go_package = "github.com/polis-interactive/Pong/pong-backend/api/v1/go/common;protoCommon";
+
+message EmptyRequest {}
+
+message EmptyResponse {}
+
+message Ping {}
+
+message Pong {}
+
+message Connected {
+  bool connected = 1;
+}
+
+message Position {
+  uint32 position = 1;
+}
