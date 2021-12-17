@@ -13,8 +13,8 @@
 
 import * as grpcWeb from 'grpc-web';
 
-import * as common_pb from './common_pb';
 import * as client_pb from './client_pb';
+import * as common_pb from './common_pb';
 
 
 export class ClientClient {

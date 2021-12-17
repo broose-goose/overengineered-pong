@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "common.pb.h": "c"
+        "common.pb.h": "c",
+        "application.h": "c"
     }
 }
