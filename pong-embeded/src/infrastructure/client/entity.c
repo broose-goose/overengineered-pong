@@ -137,15 +137,18 @@ static void clientAcceptResponses() {
                 clientHandleResponse(read_amount);
                 break;
             case SOCKET_EMPTY:
-                k_sleep(K_MSEC(250));
                 return;
         }
     }
 }
 
 static void clientRunStateRunning() {
+    LOG_INF("AM");
     clientDispatchRequests();
+    LOG_INF("U");
     clientAcceptResponses();
+    LOG_INF("ROBUST");
+    k_sleep(K_MSEC(250));
 }
 
 void clientRun() {
