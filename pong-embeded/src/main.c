@@ -1,8 +1,7 @@
 
-#include "application.h"
+#include "application/application.h"
 
 void main(void)
 {
-	ApplicationStartup();
-	ApplicationRun();
+    ApplicationStartup();
 }

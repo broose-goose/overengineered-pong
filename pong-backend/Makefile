@@ -13,9 +13,9 @@ compile:
 		--go_opt=paths=source_relative \
         --go-grpc_opt=paths=source_relative
 
-	protoc ./api/v1/embeded.proto \
+	protoc ./api/v1/embedded.proto \
 		--proto_path=./api/v1 \
-		--go_out=./api/v1/go/embeded \
+		--go_out=./api/v1/go/embedded \
 		--go_opt=paths=source_relative \
 
 	protoc ./api/v1/common.proto \
@@ -30,11 +30,11 @@ compile:
 
 	protoc --plugin=protoc-gen-nanopb="/c/Program Files (x86)/nanopb/generator/protoc-gen-nanopb.bat" \
 		--proto_path=./api/v1 \
-		--nanopb_out=./api/v1/embeded \
+		--nanopb_out=./api/v1/embedded \
 		./api/v1/common.proto
 
 	protoc --plugin=protoc-gen-nanopb="/c/Program Files (x86)/nanopb/generator/protoc-gen-nanopb.bat" \
 		--proto_path=./api/v1 \
-		--nanopb_out=./api/v1/embeded \
-		./api/v1/embeded.proto
+		--nanopb_out=./api/v1/embedded \
+		./api/v1/embedded.proto
 

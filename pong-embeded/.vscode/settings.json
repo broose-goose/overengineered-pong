@@ -1,6 +1,14 @@
 {
     "files.associations": {
         "common.pb.h": "c",
-        "application.h": "c"
+        "application.h": "c",
+        "socket.h": "c",
+        "log.h": "c",
+        "connection.h": "c",
+        "websocket.h": "c",
+        "net_mgmt.h": "c",
+        "io-channels.h": "c",
+        "entity.h": "c",
+        "gpio.h": "c"
     }
 }
