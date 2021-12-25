@@ -16,7 +16,7 @@ LOG_MODULE_REGISTER(client_entity, LOG_LEVEL_DBG);
 
 
 // this should be somekind of config
-#define SERVER_ADDRESS "192.168.1.49"
+#define SERVER_ADDRESS "192.168.1.30"
 #define SERVER_PORT 9001
 
 static uint8_t io_buf[PongBackend_v1_embeded_EmbededRequest_size];
@@ -85,7 +85,7 @@ static void clientDispatchRequest(PongBackend_v1_embeded_EmbededRequest *request
     bool status = EncodeRequest(
         io_buf, PongBackend_v1_embeded_EmbededRequest_size, &written_length, request
     );
-    if (status == false || written_length != PongBackend_v1_embeded_EmbededRequest_size) {
+    if (status == false) {
         LOG_ERR("Failed to encode request");
         return;
     }
@@ -103,10 +103,10 @@ static void clientDispatchRequests() {
     }
 }
 
-static void clientHandleResponse() {
+static void clientHandleResponse(size_t data_size) {
     bool status = false;
     PongBackend_v1_embeded_EmbededResponse *response = DecodeResponse(
-        &status, io_buf, PongBackend_v1_embeded_EmbededResponse_size
+        &status, response_buf, data_size
     );
     if (status == false) {
         LOG_ERR("Failed to decode response");
@@ -117,10 +117,12 @@ static void clientHandleResponse() {
 }
 
 static void clientAcceptResponses() {
+    size_t read_amount = 0;
     while (1) {
         socketRecvResponse response_type = recvSocketMsg(
-            client_instance.socket_handle_, PongBackend_v1_embeded_EmbededResponse_size,
-            response_buf, PongBackend_v1_embeded_EmbededResponse_size
+            client_instance.socket_handle_,
+            response_buf, PongBackend_v1_embeded_EmbededResponse_size,
+            &read_amount
         );
         switch (response_type) {
             case SOCKET_BAD_RESPONSE:
@@ -130,11 +132,12 @@ static void clientAcceptResponses() {
                 clientCleanupSocket();
                 HandleClientConnecting();
                 client_instance.state_ = CLIENT_STATE_CONNECTING;
-                break;
+                return;
             case SOCKET_HANDLED:
-                clientHandleResponse();
+                clientHandleResponse(read_amount);
                 break;
             case SOCKET_EMPTY:
+                k_sleep(K_MSEC(250));
                 return;
         }
     }

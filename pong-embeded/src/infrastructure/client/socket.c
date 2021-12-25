@@ -71,7 +71,7 @@ ssize_t sendSocketMsg(int sock, const void *buf, size_t len)
 }
 
 
-socketRecvResponse recvSocketMsg(int sock, size_t amount, uint8_t *buf, size_t buf_len) {
+socketRecvResponse recvSocketMsg(int sock, uint8_t *buf, size_t buf_len, size_t *read_amount) {
 	
 	uint64_t remaining = ULLONG_MAX;
 	int total_read;
@@ -102,14 +102,16 @@ socketRecvResponse recvSocketMsg(int sock, size_t amount, uint8_t *buf, size_t b
 		}
 		read_pos += ret;
 		total_read += ret;
+		if (total_read > buf_len) {
+			LOG_DBG("Socket buffer overlow");
+			return SOCKET_FATAL_ERROR;
+		}
 	}
 
 	if (remaining != 0) {
 		LOG_DBG("Socket returned some bullshit");
 		return SOCKET_BAD_RESPONSE;
 	} 
-	if (total_read != amount) {
-		LOG_DBG("Socket probably messed up");
-	}
+	*read_amount = total_read;
 	return SOCKET_HANDLED;
 }

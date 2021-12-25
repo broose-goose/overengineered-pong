@@ -3,9 +3,9 @@ package ws
 import (
 	"errors"
 	"fmt"
-	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
 	protoEmbedded "github.com/polis-interactive/Pong/pong-backend/api/v1/go/embedded"
+	"google.golang.org/protobuf/proto"
 	"log"
 	"net/http"
 	"sync"

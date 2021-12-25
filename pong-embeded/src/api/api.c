@@ -19,7 +19,6 @@ PongBackend_v1_embeded_EmbededRequest *GeneratePongMessage(bool *status) {
     PongBackend_v1_embeded_EmbededRequest api_msg = PongBackend_v1_embeded_EmbededRequest_init_zero;
     api_msg.which_request = PongBackend_v1_embeded_EmbededRequest_pong_tag;
     api_msg.request.pong = pong_msg;
-
     
     size_t size = sizeof(PongBackend_v1_embeded_EmbededRequest);
 	PongBackend_v1_embeded_EmbededRequest *api_ptr = k_malloc(size);
@@ -29,8 +28,9 @@ PongBackend_v1_embeded_EmbededRequest *GeneratePongMessage(bool *status) {
         return NULL;
     }
     
-    memcpy(api_ptr, &pong_msg, size);
+    memcpy(api_ptr, &api_msg, size);
 
+    *status = true;
     return api_ptr;
 }
 
@@ -51,7 +51,8 @@ PongBackend_v1_embeded_EmbededRequest *GeneratePositionMessage(uint32_t position
     }
     
     memcpy(api_ptr, &position_msg, size);
-
+    
+    *status = true;
     return api_ptr;
 }
 
@@ -61,7 +62,9 @@ bool EncodeRequest(
 ) {
     pb_ostream_t stream = pb_ostream_from_buffer(buffer, buffer_size);
     
-    bool status = pb_encode(&stream, PongBackend_v1_embeded_EmbededRequest_fields, request);
+    bool status = pb_encode(
+        &stream, PongBackend_v1_embeded_EmbededRequest_fields, request
+    );
 
 	if (status == false) {
 		LOG_ERR("Encoding failed: %s\n", PB_GET_ERROR(&stream));
@@ -85,10 +88,12 @@ PongBackend_v1_embeded_EmbededResponse *DecodeResponse(bool *status, uint8_t *bu
 
     pb_istream_t stream = pb_istream_from_buffer(buffer, message_length);
 
-    *status = pb_decode(&stream, PongBackend_v1_embeded_EmbededResponse_fields, api_ptr);
+    *status = pb_decode(
+        &stream, PongBackend_v1_embeded_EmbededResponse_fields, api_ptr
+    );
 
     if (*status == false) {
-		LOG_ERR("Encoding failed: %s\n", PB_GET_ERROR(&stream));
+		LOG_ERR("Decoding failed: %s; with bytes %d", PB_GET_ERROR(&stream), message_length);
         k_free(api_ptr);
         return NULL;
 	}

@@ -2,7 +2,7 @@ package embedded
 
 import (
 	protoCommon "github.com/polis-interactive/Pong/pong-backend/api/v1/go/common"
-	protoEmbeded "github.com/polis-interactive/Pong/pong-backend/api/v1/go/embedded"
+	protoEmbedded "github.com/polis-interactive/Pong/pong-backend/api/v1/go/embedded"
 	"github.com/polis-interactive/Pong/pong-backend/internal/domain"
 	"log"
 	"sync"
@@ -10,14 +10,14 @@ import (
 )
 
 type embedded struct {
-	ch chan *protoEmbeded.EmbeddedResponse
+	ch chan *protoEmbedded.EmbeddedResponse
 	keepAlive *domain.ConnectionKeepAlive
 	mu *sync.RWMutex
 }
 
 func NewEmbedded(connectionTimeout time.Duration) *embedded {
 	newEmbedded := &embedded {
-		ch: make(chan *protoEmbeded.EmbeddedResponse, 10),
+		ch: make(chan *protoEmbedded.EmbeddedResponse, 10),
 		mu: &sync.RWMutex{},
 	}
 	keepAlive := domain.NewConnectionKeepAlive(
@@ -34,8 +34,8 @@ func (e *embedded) sendPing() {
 	defer e.mu.RUnlock()
 	if e.ch != nil {
 		log.Println("Embedded: Pinging the big fkr")
-		e.ch<-&protoEmbeded.EmbeddedResponse{
-			Response: &protoEmbeded.EmbeddedResponse_Ping{
+		e.ch<-&protoEmbedded.EmbeddedResponse{
+			Response: &protoEmbedded.EmbeddedResponse_Ping{
 				Ping: &protoCommon.Ping{},
 			},
 		}

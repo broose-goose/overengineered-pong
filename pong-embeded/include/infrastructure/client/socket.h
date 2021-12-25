@@ -23,6 +23,6 @@ typedef enum {
     SOCKET_EMPTY = 1,
 } socketRecvResponse;
 
-socketRecvResponse recvSocketMsg(int sock, size_t amount, uint8_t *buf, size_t buf_len);
+socketRecvResponse recvSocketMsg(int sock, uint8_t *buf, size_t buf_len, size_t *read_amount);
 
 #endif /* CLIENT_SOCKET_H */

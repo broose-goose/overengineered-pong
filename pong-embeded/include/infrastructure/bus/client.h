@@ -1,34 +1,17 @@
 
-#include "domain/status/service.h"
-#include "infrastructure/client/service.h"
-#include "api/api.h"
+#ifndef BUS_CLIENT_H
+#define BUS_CLIENT_H
 
-void HandleClientIsUp() {
-    StatusClientUp();
-}
+#include "api/embeded.pb.h"
 
-void HandleClientIsDown() {
-    StatusClientDown();
-}
+void HandleClientIsUp();
 
-void HandleClientConnecting() {
-    StatusClientConnecting();
-}
+void HandleClientIsDown();
 
-void handleClientSendPong() {
-    bool status = false;
-    PongBackend_v1_embeded_EmbededRequest *pong_request = GeneratePongMessage(&status);
-    if (!status) {
-        return;
-    }
-    ClientSendMessage(pong_request);
-    k_free(pong_request);
-}
+void HandleClientConnecting();
 
-void HandleClientResponse(PongBackend_v1_embeded_EmbededResponse *response) {
-    switch(response->which_response) {
-        case PongBackend_v1_embeded_EmbededResponse_ping_tag:
-            handleClientSendPong();
-            break;
-    }
-}
+void handleClientSendPong();
+
+void HandleClientResponse(PongBackend_v1_embeded_EmbededResponse *response);
+
+#endif /* BUS_CLIENT_H */
