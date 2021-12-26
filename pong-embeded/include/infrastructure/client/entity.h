@@ -16,11 +16,24 @@ typedef enum {
     CLIENT_STATE_RUNNING = 2,
 } clientState;
 
+typedef enum {
+    KA_STATE_PING = 0,
+    KA_STATE_WAITING_FOR_PONG = 1,
+    KA_STATE_SUCCESS_TIMEOUT = 2,
+} keepAliveState;
+
+typedef struct keepAlive {
+    keepAliveState state_;
+    int64_t last_timestamp_;
+};
+
 typedef struct client {
     struct k_fifo bus_;    
     bool network_up_;
     clientState state_;
     int socket_handle_;
+    bool need_pong_;
+    struct keepAlive ping_tracker_;
 };
 
 extern struct client client_instance;

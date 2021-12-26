@@ -6,7 +6,7 @@
 #include "infrastructure/bus/network.h"
 
 #include <logging/log.h>
-LOG_MODULE_REGISTER(network_entity, LOG_LEVEL_DBG);
+LOG_MODULE_REGISTER(network_entity, LOG_LEVEL_WRN);
 
 #include <net/net_if.h>
 
@@ -47,12 +47,11 @@ static void networkResetDhcpState() {
 static void networkHandleEvent(networkEvent e) {
     LOG_INF("recieved event: %d", e);
     if (e == NETWORK_EVENT_ETHERNET_DOWN) {
-        if (network_instance.state_ == NETWORK_STATE_UP) {
-            HandleNetworkIsDown();
-            networkStopDhcpState();
-        } else if (network_instance.state_ == NETWORK_STATE_WAITING_DHCP) {
-            networkStopDhcpState();
+        if (network_instance.state_ == NETWORK_STATE_WAITING_NET) {
+            return;
         }
+        HandleNetworkIsDown();
+        networkStopDhcpState();
         network_instance.state_ = NETWORK_STATE_WAITING_NET;
     } else if (e == NETWORK_EVENT_ETHERNET_UP) {
         if (network_instance.state_ != NETWORK_STATE_WAITING_NET) {
@@ -76,7 +75,7 @@ static void networkHandleEvent(networkEvent e) {
         HandleNetworkIsUp();
         network_instance.state_ = NETWORK_STATE_UP;
     }
-    LOG_INF("now has state: %d", network_instance.state_);
+    LOG_DBG("now has state: %d", network_instance.state_);
 }
 
 

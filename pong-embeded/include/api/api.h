@@ -4,8 +4,6 @@
 
 #include "api/embeded.pb.h"
 
-PongBackend_v1_embeded_EmbededRequest *GeneratePongMessage(bool *status);
-
 PongBackend_v1_embeded_EmbededRequest *GeneratePositionMessage(uint32_t position, bool *status);
 
 bool EncodeRequest(

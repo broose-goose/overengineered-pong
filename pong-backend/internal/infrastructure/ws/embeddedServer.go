@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"sync"
+	"time"
 )
 
 type embeddedServer struct {
@@ -17,6 +18,11 @@ type embeddedServer struct {
 	shutdowns chan struct{}
 	wg *sync.WaitGroup
 }
+
+const (
+	keepAliveWaitingTimeout = 10000
+	keepAlivePongTimeout = 5000
+)
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -39,7 +45,6 @@ func newEmbeddedServer(bus Bus, shutdowns chan struct{}, wg *sync.WaitGroup) (*e
 	return srv, nil
 }
 
-
 func (e *embeddedServer) embeddedHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("embeddedServer, embeddedHandler: creating connection")
@@ -52,7 +57,7 @@ func (e *embeddedServer) embeddedHandler(w http.ResponseWriter, r *http.Request)
 
 	log.Println("embeddedServer, embeddedHandler: running")
 
-	embeddedOutChan, err := e.b.HandleEmbeddedConnectionOpen()
+	embeddedId, embeddedOutChan, err := e.b.HandleEmbeddedConnectionOpen()
 
 	if err != nil {
 		log.Println(fmt.Sprintf("embeddedServer, embeddedHandler: couldn't handle connection open; %s", err.Error()))
@@ -61,9 +66,21 @@ func (e *embeddedServer) embeddedHandler(w http.ResponseWriter, r *http.Request)
 
 	embeddedInChan := make(chan *protoEmbedded.EmbeddedRequest, 10)
 
+	embeddedPongChan := make(chan struct{}, 10)
+
 	log.Println("embeddedServer, embeddedHandler: handling messages")
 
 	e.wg.Add(2)
+
+	conn.SetPingHandler(func (string) error {
+		err := conn.WriteControl(websocket.PongMessage, []byte("\n"), time.Now().Add(time.Millisecond * 5))
+		return err
+	})
+
+	conn.SetPongHandler(func (string) error {
+		embeddedPongChan<-struct{}{}
+		return nil
+	})
 
 	// only reads on connection here
 	go func(stream *websocket.Conn, ch chan *protoEmbedded.EmbeddedRequest, wg *sync.WaitGroup) {
@@ -96,6 +113,8 @@ func (e *embeddedServer) embeddedHandler(w http.ResponseWriter, r *http.Request)
 		bus Bus,
 		shutdowns chan struct{},
 	) error {
+		keepAliveWaiting := true
+		keepAliveTimer := time.NewTimer(time.Millisecond * keepAliveWaitingTimeout)
 		for {
 			select {
 			case _, ok := <-shutdowns:
@@ -121,6 +140,25 @@ func (e *embeddedServer) embeddedHandler(w http.ResponseWriter, r *http.Request)
 				if err != nil {
 					return errors.New(fmt.Sprintf("failed to send msg; %s", err))
 				}
+			case _, ok := <-embeddedPongChan:
+				if !ok {
+					return errors.New("fairly certain this should never crop up")
+				}
+				if keepAliveWaiting == false {
+					keepAliveWaiting = true
+					keepAliveTimer.Reset(time.Millisecond * keepAliveWaitingTimeout)
+				}
+			case <- keepAliveTimer.C:
+				if keepAliveWaiting == true {
+					keepAliveWaiting = false
+					err := conn.WriteControl(websocket.PingMessage, []byte("\n"), time.Now().Add(time.Millisecond * 5))
+					if err != nil {
+						return errors.New("unable to write ping message")
+					}
+					keepAliveTimer.Reset(time.Millisecond * keepAlivePongTimeout)
+				} else {
+					return errors.New("connection timed out")
+				}
 			}
 		}
 	}(conn, embeddedOutChan, embeddedInChan, e.b, e.shutdowns)
@@ -129,7 +167,7 @@ func (e *embeddedServer) embeddedHandler(w http.ResponseWriter, r *http.Request)
 		log.Println(fmt.Sprintf("embeddedServer, embeddedHandler: out chan error; %s", err))
 	}
 
-	err = conn.WriteMessage(websocket.CloseMessage, []byte{})
+	err = conn.WriteControl(websocket.CloseMessage, []byte("\n"), time.Now().Add(time.Millisecond * 5))
 	if err != nil {
 		log.Println(fmt.Sprintf("embeddedServer, embeddedHandler: couldn't send close event; %s", err.Error()))
 	}
@@ -138,7 +176,7 @@ func (e *embeddedServer) embeddedHandler(w http.ResponseWriter, r *http.Request)
 		log.Println(fmt.Sprintf("embeddedServer, embeddedHandler: couldn't close connection; %s", err.Error()))
 	}
 
-	e.b.HandleEmbeddedConnectionClose()
+	e.b.HandleEmbeddedConnectionClose(embeddedId)
 
 	e.wg.Done()
 

@@ -6,10 +6,9 @@ import (
 )
 
 type EmbeddedService interface {
-	StartEmbeddedConnection()(chan *protoEmbedded.EmbeddedResponse, error)
-	CloseEmbeddedConnection()
+	StartEmbeddedConnection()(id uint32, ch chan *protoEmbedded.EmbeddedResponse, err error)
+	CloseEmbeddedConnection(id uint32)
 	GetEmbeddedIsConnected() (isConnected bool)
 	SendClientConnected(connected *protoCommon.Connected)
-	PongEmbedded()
 	Shutdown()
 }

@@ -6,33 +6,11 @@
 #include <zephyr.h>
 
 #include <logging/log.h>
-LOG_MODULE_REGISTER(api, LOG_LEVEL_DBG);
+LOG_MODULE_REGISTER(api, LOG_LEVEL_WRN);
 
 #include <pb_encode.h>
 #include <pb_decode.h>
 
-
-PongBackend_v1_embeded_EmbededRequest *GeneratePongMessage(bool *status) {
-    
-    PongBackend_v1_common_Pong pong_msg = PongBackend_v1_common_Pong_init_zero;
-
-    PongBackend_v1_embeded_EmbededRequest api_msg = PongBackend_v1_embeded_EmbededRequest_init_zero;
-    api_msg.which_request = PongBackend_v1_embeded_EmbededRequest_pong_tag;
-    api_msg.request.pong = pong_msg;
-    
-    size_t size = sizeof(PongBackend_v1_embeded_EmbededRequest);
-	PongBackend_v1_embeded_EmbededRequest *api_ptr = k_malloc(size);
-	if (api_ptr == 0) {
-        *status = false;
-        LOG_ERR("Malloc failed; heap full");
-        return NULL;
-    }
-    
-    memcpy(api_ptr, &api_msg, size);
-
-    *status = true;
-    return api_ptr;
-}
 
 PongBackend_v1_embeded_EmbededRequest *GeneratePositionMessage(uint32_t position, bool *status) {
     

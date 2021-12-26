@@ -5,8 +5,8 @@ import (
 )
 
 type Bus interface {
-	HandleEmbeddedConnectionOpen() (ch chan *protoEmbedded.EmbeddedResponse, err error)
-	HandleEmbeddedConnectionClose()
+	HandleEmbeddedConnectionOpen() (id uint32, ch chan *protoEmbedded.EmbeddedResponse, err error)
+	HandleEmbeddedConnectionClose(id uint32)
 	HandleEmbeddedEvent(event *protoEmbedded.EmbeddedRequest)
 }
 

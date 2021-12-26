@@ -14,7 +14,6 @@
 typedef struct _PongBackend_v1_embedded_EmbeddedRequest { 
     pb_size_t which_request;
     union {
-        PongBackend_v1_common_Pong pong;
         PongBackend_v1_common_Position position;
     } request; 
 } PongBackend_v1_embedded_EmbeddedRequest;
@@ -22,7 +21,6 @@ typedef struct _PongBackend_v1_embedded_EmbeddedRequest {
 typedef struct _PongBackend_v1_embedded_EmbeddedResponse { 
     pb_size_t which_response;
     union {
-        PongBackend_v1_common_Ping ping;
         PongBackend_v1_common_Connected connected;
     } response; 
 } PongBackend_v1_embedded_EmbeddedResponse;
@@ -33,32 +31,26 @@ extern "C" {
 #endif
 
 /* Initializer values for message structs */
-#define PongBackend_v1_embedded_EmbeddedRequest_init_default {0, {PongBackend_v1_common_Pong_init_default}}
-#define PongBackend_v1_embedded_EmbeddedResponse_init_default {0, {PongBackend_v1_common_Ping_init_default}}
-#define PongBackend_v1_embedded_EmbeddedRequest_init_zero {0, {PongBackend_v1_common_Pong_init_zero}}
-#define PongBackend_v1_embedded_EmbeddedResponse_init_zero {0, {PongBackend_v1_common_Ping_init_zero}}
+#define PongBackend_v1_embedded_EmbeddedRequest_init_default {0, {PongBackend_v1_common_Position_init_default}}
+#define PongBackend_v1_embedded_EmbeddedResponse_init_default {0, {PongBackend_v1_common_Connected_init_default}}
+#define PongBackend_v1_embedded_EmbeddedRequest_init_zero {0, {PongBackend_v1_common_Position_init_zero}}
+#define PongBackend_v1_embedded_EmbeddedResponse_init_zero {0, {PongBackend_v1_common_Connected_init_zero}}
 
 /* Field tags (for use in manual encoding/decoding) */
-#define PongBackend_v1_embedded_EmbeddedRequest_pong_tag 1
 #define PongBackend_v1_embedded_EmbeddedRequest_position_tag 2
-#define PongBackend_v1_embedded_EmbeddedResponse_ping_tag 1
 #define PongBackend_v1_embedded_EmbeddedResponse_connected_tag 2
 
 /* Struct field encoding specification for nanopb */
 #define PongBackend_v1_embedded_EmbeddedRequest_FIELDLIST(X, a) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (request,pong,request.pong),   1) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (request,position,request.position),   2)
 #define PongBackend_v1_embedded_EmbeddedRequest_CALLBACK NULL
 #define PongBackend_v1_embedded_EmbeddedRequest_DEFAULT NULL
-#define PongBackend_v1_embedded_EmbeddedRequest_request_pong_MSGTYPE PongBackend_v1_common_Pong
 #define PongBackend_v1_embedded_EmbeddedRequest_request_position_MSGTYPE PongBackend_v1_common_Position
 
 #define PongBackend_v1_embedded_EmbeddedResponse_FIELDLIST(X, a) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (response,ping,response.ping),   1) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (response,connected,response.connected),   2)
 #define PongBackend_v1_embedded_EmbeddedResponse_CALLBACK NULL
 #define PongBackend_v1_embedded_EmbeddedResponse_DEFAULT NULL
-#define PongBackend_v1_embedded_EmbeddedResponse_response_ping_MSGTYPE PongBackend_v1_common_Ping
 #define PongBackend_v1_embedded_EmbeddedResponse_response_connected_MSGTYPE PongBackend_v1_common_Connected
 
 extern const pb_msgdesc_t PongBackend_v1_embedded_EmbeddedRequest_msg;

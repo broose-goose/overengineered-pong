@@ -2,9 +2,8 @@
 #include "infrastructure/client/socket.h"
 
 #include <logging/log.h>
-LOG_MODULE_REGISTER(client_socket, LOG_LEVEL_DBG);
+LOG_MODULE_REGISTER(client_socket, LOG_LEVEL_WRN);
 
-#include <net/websocket.h>
 
 /* graciously copied from zephyr / samples / net / websocket */
 
@@ -62,10 +61,17 @@ int connectSocket(
 	return ret;
 }
 
-ssize_t sendSocketMsg(int sock, const void *buf, size_t len)
+ssize_t sendSocketData(int sock, const void *buf, size_t len)
 {
 	return websocket_send_msg(
 		sock, buf, len, WEBSOCKET_OPCODE_DATA_BINARY,
+		true, true, 5 * MSEC_PER_SEC
+	);
+}
+
+ssize_t sendSocketOp(int sock, socketSendOp op) {
+	return websocket_send_msg(
+		sock, NULL, 0, op,
 		true, true, 5 * MSEC_PER_SEC
 	);
 }
@@ -91,27 +97,43 @@ socketRecvResponse recvSocketMsg(int sock, uint8_t *buf, size_t buf_len, size_t 
 		);
 		if (ret <= 0) {
 			if (ret == -EAGAIN) {
-				return SOCKET_EMPTY;
+				return SOCKET_RECV_EMPTY;
 			} else {
-				LOG_DBG(
+				LOG_ERR(
 					"socket connection closed... or something (%d/%d)", ret, errno
 				);
-				return SOCKET_FATAL_ERROR;
+				return SOCKET_RECV_FATAL_ERROR;
 			}
 
 		}
 		read_pos += ret;
 		total_read += ret;
 		if (total_read > buf_len) {
-			LOG_DBG("Socket buffer overlow");
-			return SOCKET_FATAL_ERROR;
+			LOG_ERR("Socket buffer overlow");
+			return SOCKET_RECV_FATAL_ERROR;
 		}
 	}
 
 	if (remaining != 0) {
-		LOG_DBG("Socket returned some bullshit");
-		return SOCKET_BAD_RESPONSE;
+		LOG_WRN("Socket returned some bullshit");
+		return SOCKET_RECV_BAD_RESPONSE;
 	} 
 	*read_amount = total_read;
-	return SOCKET_HANDLED;
+	
+	if ((message_type & WEBSOCKET_FLAG_PONG) != 0) {
+		return SOCKET_RECV_PONG;
+	} else if ((message_type & WEBSOCKET_FLAG_PING) != 0) {
+		return SOCKET_RECV_PING;
+	} else if ((message_type & WEBSOCKET_FLAG_CLOSE) != 0) {
+		return SOCKET_RECV_CLOSE;
+	} else if ((message_type & WEBSOCKET_OPCODE_DATA_BINARY) != 0) {
+		if (total_read != 0) {
+			return SOCKET_RECV_HANDLED;
+		} else {
+			return SOCKET_RECV_EMPTY;
+		}
+	} else {
+		LOG_WRN("Bad response");
+		return SOCKET_RECV_FATAL_ERROR;
+	}
 }

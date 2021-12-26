@@ -3,6 +3,9 @@
 
 #include <zephyr.h>
 
+#include <logging/log.h>
+LOG_MODULE_REGISTER(domain_status_entity, LOG_LEVEL_WRN);
+
 K_TIMER_DEFINE(network_timer, runBlinkyStatus, NULL);
 struct statusLed network_led = {
     .timer_ = &network_timer,
@@ -33,25 +36,25 @@ void runBlinkyStatus(struct k_timer *timer_id) {
 bool enableStatusPins() {
 
     if (!device_is_ready(network_led.spec_.port)) {
-		printk("Error: %s device is not ready\n", network_led.spec_.port->name);
+		LOG_ERR("Error: %s device is not ready\n", network_led.spec_.port->name);
 		return false;
 	}
     
     int32_t ret = gpio_pin_configure_dt(&network_led.spec_, GPIO_OUTPUT);
 	if (ret != 0) {
-		printk("Error %d: failed to configure pin %d (NAME '%s')\n",
+		LOG_ERR("Error %d: failed to configure pin %d (NAME '%s')\n",
 			ret, network_led.spec_.pin, network_led.gpio_pin_name_);
 		return false;
 	}
 
     if (!device_is_ready(client_led.spec_.port)) {
-		printk("Error: %s device is not ready\n", client_led.spec_.port->name);
+		LOG_ERR("Error: %s device is not ready\n", client_led.spec_.port->name);
 		return false;
 	}
     
     ret = gpio_pin_configure_dt(&client_led.spec_, GPIO_OUTPUT);
 	if (ret != 0) {
-		printk("Error %d: failed to configure pin %d (NAME '%s')\n",
+		LOG_ERR("Error %d: failed to configure pin %d (NAME '%s')\n",
 			ret, client_led.spec_.pin, client_led.gpio_pin_name_);
 		return false;
 	}

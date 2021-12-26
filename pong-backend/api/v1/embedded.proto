@@ -9,14 +9,12 @@ option go_package = "github.com/polis-interactive/Pong/pong-backend/api/v1/go/em
 
 message EmbeddedRequest {
   oneof request {
-    common.Pong pong = 1;
     common.Position position = 2;
   }
 }
 
 message EmbeddedResponse {
   oneof response {
-    common.Ping ping = 1;
     common.Connected connected = 2;
   }
 }
